@@ -53,12 +53,15 @@ class Scplode:
         self.obs_path = self.adata_path.with_suffix(".obs")
         self.dat_path = self.adata_path.with_suffix(".dat")
         self.var_path = self.adata_path.with_suffix(".var")
+        self.mtime_path = self.adata_path.with_suffix(".mtime")  # store file mtime
+
 
         # Variables updated later
         self.obs: Union[pd.DataFrame, None] = None
         self.var: Union[pd.DataFrame, None] = None
         self.n_obs: int = 0
         self.n_vars: int = 0
+        self.adata_mtime: float = 0.0  # stored mtime
 
     def has_index(self) -> bool:
         """
@@ -77,6 +80,7 @@ class Scplode:
             bool: True if successful.
         """
         assert self.has_index(), "Index files are missing. Run create_index() first."
+        self._check_mtime()  # verify file consistency
         logger.info("Loading index: obs")
         self.obs = pd.read_pickle(self.obs_path)
 
@@ -86,7 +90,29 @@ class Scplode:
         logger.info("Loading index: dat (implicitly)")
         self.n_vars = self.var.shape[0]
         self.n_obs = self.obs.shape[0]
+
         return True
+
+    def _save_mtime(self) -> None:
+        """Save current .h5ad modification time to a file."""
+        self.adata_mtime = self.adata_path.stat().st_mtime
+        self.mtime_path.write_text(str(self.adata_mtime))
+
+    def _load_mtime(self) -> float:
+        """Load stored modification time."""
+        if self.mtime_path.exists():
+            return float(self.mtime_path.read_text())
+        return 0.0
+
+    def _check_mtime(self) -> None:
+        """Check that the current file mtime matches the stored mtime."""
+        stored = self._load_mtime()
+        current = self.adata_path.stat().st_mtime
+        if stored != current:
+            raise RuntimeError(
+                f"The .h5ad file has changed since the index was created.\n"
+                f"Stored mtime: {stored}, current mtime: {current}"
+            )
 
     def create_index(self, chunk_size: int = 1000) -> None:
         """
@@ -119,6 +145,8 @@ class Scplode:
         logger.info("Creating index: packing var")
         adata.var.to_pickle(self.var_path)
 
+        self._save_mtime()
+
     def delete_index(self) -> None:
         """
         Delete the `.obs`, `.var`, and `.dat` files created by Scplode for a given `.h5ad`.
@@ -130,7 +158,7 @@ class Scplode:
             - Will not delete the original `.h5ad`.
             - Logs which files are deleted or missing.
         """
-        for path in [self.obs_path, self.var_path, self.dat_path]:
+        for path in [self.obs_path, self.var_path, self.dat_path, self.mtime_path]:
             if path.exists():
                 path.unlink()
                 logger.info(f"Deleted: {path}")
@@ -169,7 +197,7 @@ class Scplode:
         for col in obs.select_dtypes(["category"]).columns:
             obs[col] = obs[col].astype(str).astype("category")
 
-        return AnnData(X=data, obs=obs, var=self.var)
+        return ad.AnnData(X=data, obs=obs, var=self.var)
 
     def __getitem__(self, key: Union[int, slice, list, np.ndarray, pd.Index, tuple]) -> ad.AnnData:
         """
