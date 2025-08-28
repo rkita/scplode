@@ -69,3 +69,8 @@ venv.bak/
 # Logs
 *.log
 
+# data
+*.adata
+*.h5ad
+*.h5
+
