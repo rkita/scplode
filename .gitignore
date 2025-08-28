@@ -73,4 +73,6 @@ venv.bak/
 *.adata
 *.h5ad
 *.h5
-
+*.obs
+*.dat
+*.var
