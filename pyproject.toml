@@ -6,9 +6,10 @@ build-backend = "setuptools.build_meta"
 name = "scplode"
 version = "0.1.0"
 description = "scplode: a memory-efficient fast accesser for adata files"
-authors = [{name = "Ryosuke Kita", email = "rkita4@gmail.com"}]
+authors = [{name = "Ryosuke Kita", email = "ryo.blair.kita@gmail.com"}]
 readme = "README.md"
 requires-python = ">=3.7"
+license = { file = "LICENSE" }
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -19,12 +20,16 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
     "pandas",
     "numpy",
     "anndata"
 ]
+[project.urls]
+"Homepage" = "https://github.com/rkita4/scplode"
+"Issues" = "https://github.com/rkita4/scplode/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]
