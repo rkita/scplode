@@ -76,3 +76,7 @@ venv.bak/
 *.obs
 *.dat
 *.var
+*.toml
+
+#pycache
+*.pyc
