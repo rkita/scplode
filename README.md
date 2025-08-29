@@ -17,7 +17,7 @@
 | **Backed AnnData** | Classic API | Slower access times |
 | **Bionemo-scdl** | Similar memory mapping | Loss of obs/var , ML-focused |
 | **ScDataset** | No format conversion necessary | Loss of obs/var, ML-focused |
-| **scplode** | Simple, fast, memory-efficient, familiar API | Requires disk space for index |
+| **scplode** | Simple, fast, memory-efficient, familiar API | Requires disk space for mmap. |
 
 ## Installation
 
