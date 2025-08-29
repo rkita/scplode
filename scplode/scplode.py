@@ -133,7 +133,14 @@ class Scplode:
                 if type(adata.X).__name__ == "Dataset":
                     chunk = np.array(adata.X[start_idx:end_idx, :]).astype("float32")
                 elif type(adata.X).__name__ == "_CSRDataset":
-                    chunk = adata.X[start_idx:end_idx, :].to_memory().toarray().astype("float32")
+                    # When we slice a _CSRDataset, we get a csr_matrix
+                    chunk_matrix = adata.X[start_idx:end_idx, :]
+                    # Check if it's still a dataset (shouldn't happen) or already a matrix
+                    if hasattr(chunk_matrix, 'to_memory'):
+                        chunk = chunk_matrix.to_memory().toarray().astype("float32")
+                    else:
+                        # It's already a csr_matrix, just convert to dense
+                        chunk = chunk_matrix.toarray().astype("float32")
                 else:
                     chunk = adata.X[start_idx:end_idx, :].toarray().astype("float32")
                 chunk.tofile(f)
